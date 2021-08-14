@@ -2,6 +2,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -32,9 +33,11 @@ namespace API.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUsers([FromQuery] UserParams userParams)
         {
-            var Users = await userRepository.GetMembersAsync();
+            var Users = await userRepository.GetMembersAsync(userParams);
+
+            Response.AddPaginationHeader(Users.CurrentPage, Users.PageSize, Users.TotalCount, Users.TotalPages);
 
 
             return Ok(Users);
@@ -156,7 +159,7 @@ namespace API.Controllers
 
             user.Photos.Remove(photo);
             if (await userRepository.SaveAllAsync()) return Ok();
-            return BadRequest("Failed to delete the Photo"); 
+            return BadRequest("Failed to delete the Photo");
         }
     }
 }
