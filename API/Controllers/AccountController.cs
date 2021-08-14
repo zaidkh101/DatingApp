@@ -5,6 +5,7 @@ using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace API.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
         {
-            var User = await _context.Users.SingleOrDefaultAsync(user => user.UserName == loginDTO.Username.ToLower());
+            var User = await _context.Users.Include(p => p.Photos).SingleOrDefaultAsync(user => user.UserName == loginDTO.Username.ToLower());
 
             if (User == null)
             {
@@ -77,7 +78,8 @@ namespace API.Controllers
             return new UserDTO
             {
                 Username = User.UserName,
-                Token = _tokenService.CreateToken(User)
+                Token = _tokenService.CreateToken(User),
+                PhotoUrl = User.Photos.FirstOrDefault(x => x.IsMain)?.Url
             };
         }
         private async Task<Boolean> UserExists(string Username)
