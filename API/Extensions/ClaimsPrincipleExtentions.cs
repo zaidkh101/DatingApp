@@ -8,9 +8,14 @@ namespace API.Extensions
 {
     public static class ClaimsPrincipleExtentions
     {
-        public static string GetUserame(this ClaimsPrincipal User)
+        public static string GetUsername(this ClaimsPrincipal User)
         {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return User.FindFirst(ClaimTypes.Name)?.Value;
+        }
+
+        public static int GetUserId(this ClaimsPrincipal User)
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
         }
     }
 }
