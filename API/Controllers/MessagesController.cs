@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Entities;
 using AutoMapper;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -61,6 +62,28 @@ namespace API.Controllers
             if (await messageRepository.SaveAllAsync()) return Ok(mapper.Map<MessageDTO>(Message));
 
             return BadRequest("Failed to send message");
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetMessagesForUser([FromQuery] MessageParams messageParams)
+        {
+            messageParams.Username = User.GetUsername();
+
+            var Messages = await messageRepository.GetMessageForUser(messageParams);
+
+            Response.AddPaginationHeader(Messages.CurrentPage, Messages.PageSize, Messages.TotalCount, Messages.TotalPages);
+
+            return Messages;
+
+        }
+
+        [HttpGet("thread/{username}")]
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetMessageThread(string username)
+        {
+            var CurrentUsername = User.GetUsername();
+
+            return Ok(await messageRepository.GetMessageThread(CurrentUsername, username));
         }
     }
 }
