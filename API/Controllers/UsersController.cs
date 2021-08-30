@@ -31,6 +31,8 @@ namespace API.Controllers
             _photoService = photoService;
         }
 
+
+      
         [HttpGet]
 
         public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUsers([FromQuery] UserParams userParams)
@@ -40,7 +42,7 @@ namespace API.Controllers
 
             if (string.IsNullOrEmpty(userParams.Gender))
             {
-                userParams.Gender = user.Gender.ToLower() == "male" ? "female" : "male";
+                userParams.Gender = user.Gender== "male" ? "female" : "male";
             }
 
 
@@ -52,7 +54,6 @@ namespace API.Controllers
             return Ok(Users);
         }
 
-        //   api/Users/lisa
         [HttpGet("{username}", Name = "GetUser")]
 
         public async Task<ActionResult<MemberDTO>> GetUser(string username)
