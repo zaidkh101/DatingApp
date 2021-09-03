@@ -23,6 +23,10 @@ namespace API.Data
             this.mapper = mapper;
         }
 
+        public void AddGroup(Group group)
+        {
+            context.Groups.Add(group);
+        }
 
         public void AddMessage(Message message)
         {
@@ -33,6 +37,16 @@ namespace API.Data
         public void DeleteMessage(Message message)
         {
             context.Messages.Remove(message);
+        }
+
+        public async Task<Connection> GetConnection(string connectionId)
+        {
+            return await context.Connections.FindAsync(connectionId);
+        }
+
+        public async Task<Group> GetGroupForConnection(string connectionId)
+        {
+            return await context.Groups.Include(c => c.Connections).Where(c => c.Connections.Any(x => x.ConnectionId == connectionId)).FirstOrDefaultAsync();
         }
 
         public async Task<Message> GetMessage(int id)
@@ -56,6 +70,11 @@ namespace API.Data
 
         }
 
+        public async Task<Group> GetMessageGroup(string groupName)
+        {
+            return await context.Groups.Include(x => x.Connections).FirstOrDefaultAsync(x => x.Name == groupName);
+        }
+
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
         {
             var Messages = await context.Messages.Include(u => u.Sender).ThenInclude(p => p.Photos)
@@ -73,13 +92,18 @@ namespace API.Data
             {
                 foreach (var message in UnReadMessages)
                 {
-                    message.DateRead = DateTime.Now;
+                    message.DateRead = DateTime.UtcNow;
                 }
 
                 await context.SaveChangesAsync();
             }
 
             return mapper.Map<IEnumerable<MessageDTO>>(Messages);
+        }
+
+        public void RemoveConnection(Connection connection)
+        {
+            context.Connections.Remove(connection);
         }
 
         public async Task<bool> SaveAllAsync()
